@@ -1,0 +1,22 @@
+services:
+  ptm_bmup_landing:
+    container_name: ptm_bmup_landing
+    build:
+      context: .
+      dockerfile: docker/nuxt/Dockerfile
+    environment:
+      NUXT_PUBLIC_SITE_URL: ${NUXT_PUBLIC_SITE_URL}
+      NUXT_PUBLIC_API_BASE: ${NUXT_PUBLIC_API_BASE}
+      PORT: ${PORT}
+      TZ: Asia/Jakarta
+    expose:
+      - "3101"
+  ptm_bmup_landing_nginx:
+    container_name: ptm_bmup_landing_nginx
+    build:
+      context: .
+      dockerfile: docker/nginx/Dockerfile
+    ports:
+      - "3101:80"
+    depends_on:
+      - ptm_bmup_landing

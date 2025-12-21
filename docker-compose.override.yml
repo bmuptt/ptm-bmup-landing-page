@@ -1,0 +1,6 @@
+services:
+  ptm_bmup_landing:
+    restart: "no"
+
+  ptm_bmup_landing_nginx:
+    restart: "no"

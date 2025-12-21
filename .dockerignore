@@ -1,0 +1,15 @@
+node_modules
+.output
+.nuxt
+.nitro
+.cache
+dist
+
+.git
+.gitignore
+
+.env
+.env.*
+logs
+*.log
+coverage
