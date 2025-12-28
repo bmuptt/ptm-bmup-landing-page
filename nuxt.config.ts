@@ -10,11 +10,11 @@ export default defineNuxtConfig({
   },
   runtimeConfig: {
     public: {
-      siteUrl: process.env.NUXT_PUBLIC_SITE_URL || 'http://localhost:3101',
-      apiBase: process.env.NUXT_PUBLIC_API_BASE || 'https://api.example.com',
-      backendUrlSetting: process.env.NUXT_PUBLIC_BACKEND_URL_SETTING || 'http://localhost:3200',
+      siteUrl: 'http://localhost:3101',
+      apiBase: 'https://api.example.com',
+      backendUrlSetting: 'http://localhost:3200',
       appName: 'PTM BMUP',
-      nodeEnv: process.env.NODE_ENV || 'development'
+      nodeEnv: 'development'
     }
   },
 

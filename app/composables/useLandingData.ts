@@ -1,13 +1,13 @@
-import { useCoreSetting } from './useCoreSetting'
-import { useLandingSections } from './useLandingSections'
+import { fetchCoreSetting } from './useCoreSetting'
+import { fetchLandingSections } from './useLandingSections'
 
 export const useLandingData = async () => {
-  const { data: coreSetting } = await useCoreSetting()
-  const { data: landingSections } = await useLandingSections()
+  const coreSetting = await fetchCoreSetting()
+  const landingSections = await fetchLandingSections()
 
   // Helper to find item by page and key
   const findItem = (pageKey: string, itemKey: string) => {
-    const section = landingSections.value?.find(s => s.section.page_key === pageKey)
+    const section = landingSections?.find(s => s.section.page_key === pageKey)
     return section?.items.find(i => i.key === itemKey)
   }
 
@@ -19,7 +19,7 @@ export const useLandingData = async () => {
   const missionItem = findItem('about', 'misi')
 
   const data = {
-    core: coreSetting.value, // Expose core setting
+    core: coreSetting,
     hero: {
       title: heroItem?.title || '',
       subtitle: heroItem?.content || '',
@@ -33,8 +33,8 @@ export const useLandingData = async () => {
     contact: {
       email: emailItem?.content || '',
       phone: phoneItem?.content || '',
-      address: coreSetting.value?.address || '',
-      maps: coreSetting.value?.maps || '',
+      address: coreSetting?.address || '',
+      maps: coreSetting?.maps || '',
     },
     aboutPage: {
       vision: visionItem?.content || '',

@@ -52,7 +52,7 @@
         <h2 class="text-h3 font-weight-bold text-center text-primary mb-12">Kegiatan Kami</h2>
         <v-row>
           <v-col v-for="activity in (data?.activities || [])" :key="activity.id" cols="12" md="4">
-            <v-card class="h-100 text-center py-8 px-4" elevation="2" hover>
+            <v-card class="h-100 text-center py-8 px-4 kegiatan-card" elevation="2">
               <v-icon :icon="activity.icon" size="64" color="secondary" class="mb-4"/>
               <v-card-title class="text-h5 font-weight-bold mb-2">{{ activity.title }}</v-card-title>
               <v-card-text class="text-body-1 text-medium-emphasis">
@@ -95,14 +95,14 @@
 </template>
 
 <script setup lang="ts">
-import { useAsyncData, useSeoMeta, createError } from 'nuxt/app'
+import { useAsyncData, useSeoMeta } from 'nuxt/app'
 import { ref, onMounted, onBeforeUnmount } from 'vue'
 import { useLandingData } from '~/composables/useLandingData'
 
-const { data } = await useAsyncData('landing', () => Promise.resolve(useLandingData()))
+const { data, error } = await useAsyncData('landing', useLandingData)
 
-if (!data.value && import.meta.server) {
-  throw createError({ statusCode: 500, statusMessage: 'Failed to load landing data' })
+if (error.value && import.meta.server) {
+  throw error.value
 }
 
 useSeoMeta({
@@ -153,6 +153,11 @@ onBeforeUnmount(() => {
   .typing {
     white-space: normal;
   }
+}
+
+.kegiatan-card,
+.kegiatan-card:hover {
+  cursor: default;
 }
 </style>
 

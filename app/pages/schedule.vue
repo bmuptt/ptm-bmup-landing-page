@@ -93,7 +93,7 @@ import { useAsyncData, useSeoMeta, createError } from 'nuxt/app'
 import { useLandingData } from '~/composables/useLandingData'
 defineOptions({ name: 'SchedulePage' })
 
-const { data } = await useAsyncData('landing', () => Promise.resolve(useLandingData()))
+const { data } = await useAsyncData('landing', useLandingData)
 
 if (!data.value && import.meta.server) {
   throw createError({ statusCode: 500, statusMessage: 'Failed to load landing data' })
