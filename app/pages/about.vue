@@ -13,25 +13,13 @@
       <v-col cols="12" md="6">
         <v-card class="h-100 pa-6" color="primary" variant="tonal">
           <v-card-title class="text-h4 font-weight-bold mb-4">Visi</v-card-title>
-          <v-card-text class="text-h6">
-            "{{ data?.aboutPage.vision }}"
-          </v-card-text>
+          <div class="v-card-text text-body-1 wysiwyg-content" v-html="data?.aboutPage.vision" />
         </v-card>
       </v-col>
       <v-col cols="12" md="6">
         <v-card class="h-100 pa-6" border>
           <v-card-title class="text-h4 font-weight-bold mb-4 text-primary">Misi</v-card-title>
-          <v-list density="comfortable">
-            <v-list-item
-              v-for="(mission, index) in data?.aboutPage.mission"
-              :key="index"
-              :title="mission"
-            >
-              <template #prepend>
-                <v-icon color="secondary" icon="mdi-check-circle" class="mr-3"/>
-              </template>
-            </v-list-item>
-          </v-list>
+          <div class="v-card-text text-body-1 wysiwyg-content" v-html="data?.aboutPage.mission" />
         </v-card>
       </v-col>
     </v-row>
@@ -41,7 +29,7 @@
       <h2 class="text-h4 font-weight-bold text-center mb-8">Perjalanan Kami</h2>
       <v-timeline align="start" side="end">
         <v-timeline-item
-          v-for="(item, i) in data?.aboutPage.history"
+          v-for="(item, i) in (data?.aboutPage?.history || [])"
           :key="i"
           :dot-color="i % 2 === 0 ? 'primary' : 'secondary'"
           size="small"
@@ -64,7 +52,7 @@
       <h2 class="text-h4 font-weight-bold text-center mb-12">Pengurus & Pelatih</h2>
       <v-row>
         <v-col
-          v-for="(person, index) in data?.aboutPage.teams"
+          v-for="(person, index) in (data?.aboutPage?.teams || [])"
           :key="index"
           cols="12"
           sm="6"
@@ -86,14 +74,31 @@
 </template>
 
 <script setup lang="ts">
-import { useAsyncData, useSeoMeta } from 'nuxt/app'
+import { useAsyncData, useSeoMeta, createError } from 'nuxt/app'
 import { useLandingData } from '~/composables/useLandingData'
 defineOptions({ name: 'AboutPage' })
 
 const { data } = await useAsyncData('landing', () => Promise.resolve(useLandingData()))
+
+if (!data.value && import.meta.server) {
+  throw createError({ statusCode: 500, statusMessage: 'Failed to load landing data' })
+}
 
 useSeoMeta({
   title: 'Tentang Kami - PTM BMUP',
   description: 'Kenali lebih dekat sejarah, visi misi, dan pengurus PTM BMUP.',
 })
 </script>
+
+<style scoped>
+:deep(.wysiwyg-content ul), :deep(.wysiwyg-content ol) {
+  padding-left: 1.5rem;
+  margin-bottom: 1rem;
+}
+:deep(.wysiwyg-content li) {
+  margin-bottom: 0.5rem;
+}
+:deep(.wysiwyg-content p) {
+  margin-bottom: 1rem;
+}
+</style>

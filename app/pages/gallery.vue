@@ -7,7 +7,7 @@
 
     <v-row>
       <v-col
-        v-for="(image, index) in data?.gallery"
+        v-for="(image, index) in (data?.gallery || [])"
         :key="index"
         cols="12"
         sm="6"
@@ -35,10 +35,14 @@
 </template>
 
 <script setup lang="ts">
-import { useAsyncData, useSeoMeta } from 'nuxt/app'
+import { useAsyncData, useSeoMeta, createError } from 'nuxt/app'
 import { useLandingData } from '~/composables/useLandingData'
 
 const { data } = await useAsyncData('landing', () => Promise.resolve(useLandingData()))
+
+if (!data.value && import.meta.server) {
+  throw createError({ statusCode: 500, statusMessage: 'Failed to load landing data' })
+}
 
 useSeoMeta({
   title: 'Galeri - PTM BMUP',

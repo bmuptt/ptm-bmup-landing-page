@@ -7,10 +7,15 @@ services:
     environment:
       NUXT_PUBLIC_SITE_URL: ${NUXT_PUBLIC_SITE_URL}
       NUXT_PUBLIC_API_BASE: ${NUXT_PUBLIC_API_BASE}
+      NUXT_PUBLIC_BACKEND_URL_SETTING: ${NUXT_PUBLIC_BACKEND_URL_SETTING}
+      NODE_ENV: ${NODE_ENV}
       PORT: ${PORT}
       TZ: Asia/Jakarta
     expose:
       - "3101"
+    networks:
+      - global_backend_network
+      
   ptm_bmup_landing_nginx:
     container_name: ptm_bmup_landing_nginx
     build:
@@ -20,3 +25,9 @@ services:
       - "3101:80"
     depends_on:
       - ptm_bmup_landing
+    networks:
+      - global_backend_network
+
+networks:
+  global_backend_network:
+    external: true

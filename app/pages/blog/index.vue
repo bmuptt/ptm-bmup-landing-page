@@ -7,7 +7,7 @@
 
     <v-row>
       <v-col
-        v-for="article in data?.blogData"
+        v-for="article in (data?.blogData || [])"
         :key="article.id"
         cols="12"
         md="4"
@@ -47,14 +47,23 @@
         </v-card>
       </v-col>
     </v-row>
+    <div v-if="!(data?.blogData && data.blogData.length)" class="text-center mt-8">
+      <v-btn color="secondary" variant="text" append-icon="mdi-arrow-right">
+        Baca Selengkapnya
+      </v-btn>
+    </div>
   </v-container>
 </template>
 
 <script setup lang="ts">
-import { useAsyncData, useSeoMeta } from 'nuxt/app'
+import { useAsyncData, useSeoMeta, createError } from 'nuxt/app'
 import { useLandingData } from '~/composables/useLandingData'
 
 const { data } = await useAsyncData('landing', () => Promise.resolve(useLandingData()))
+
+if (!data.value && import.meta.server) {
+  throw createError({ statusCode: 500, statusMessage: 'Failed to load landing data' })
+}
 
 useSeoMeta({
   title: 'Blog & Berita - PTM BMUP',

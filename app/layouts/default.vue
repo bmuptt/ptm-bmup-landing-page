@@ -3,14 +3,17 @@
     <v-app>
       <v-app-bar color="primary" elevation="2">
         <template #prepend>
-          <v-icon icon="mdi-tennis-ball" size="large" class="ml-2 mr-2"/>
+          <v-avatar v-if="coreSetting?.logo" size="40" class="ml-2 mr-2">
+            <v-img :src="coreSetting.logo" alt="Logo" />
+          </v-avatar>
+          <v-icon v-else icon="mdi-tennis-ball" size="large" class="ml-2 mr-2"/>
         </template>
         <template #append>
-          <v-app-bar-nav-icon class="d-flex d-sm-none" @click="drawer = !drawer"/>
+          <v-app-bar-nav-icon class="d-flex d-md-none" @click="drawer = !drawer"/>
         </template>
-        <v-app-bar-title class="font-weight-bold text-h6">PTM BMUP</v-app-bar-title>
+        <v-app-bar-title class="font-weight-bold text-h6">{{ coreSetting?.name || 'PTM BMUP' }}</v-app-bar-title>
         <v-spacer/>
-        <div class="d-none d-sm-flex">
+        <div class="d-none d-md-flex">
           <v-btn variant="text" to="/" class="text-capitalize">Home</v-btn>
           <v-btn variant="text" to="/about" class="text-capitalize">Tentang Kami</v-btn>
           <v-btn variant="text" to="/schedule" class="text-capitalize">Jadwal</v-btn>
@@ -40,8 +43,8 @@
           <v-btn icon="mdi-facebook" variant="text" density="comfortable"/>
           <v-btn icon="mdi-whatsapp" variant="text" density="comfortable"/>
         </div>
-        <div class="px-4 py-3 bg-black w-100 text-center text-caption">
-          &copy; {{ year }} — <strong>PTM BMUP</strong>
+        <div class="px-4 py-3 bg-secondary w-100 text-center text-caption">
+          &copy; {{ year }} — <strong>{{ coreSetting?.name || 'PTM BMUP' }}</strong>
         </div>
       </v-footer>
     </v-app>
@@ -49,14 +52,17 @@
   <v-app v-else>
     <v-app-bar color="primary" elevation="2">
       <template #prepend>
-        <v-icon icon="mdi-tennis-ball" size="large" class="ml-2 mr-2"/>
+        <v-avatar v-if="coreSetting?.logo" size="40" class="ml-2 mr-2">
+          <v-img :src="coreSetting.logo" alt="Logo" />
+        </v-avatar>
+        <v-icon v-else icon="mdi-tennis-ball" size="large" class="ml-2 mr-2"/>
       </template>
       <template #append>
-        <v-app-bar-nav-icon class="d-flex d-sm-none" @click="drawer = !drawer"/>
+        <v-app-bar-nav-icon class="d-flex d-md-none" @click="drawer = !drawer"/>
       </template>
-      <v-app-bar-title class="font-weight-bold text-h6">PTM BMUP</v-app-bar-title>
+      <v-app-bar-title class="font-weight-bold text-h6">{{ coreSetting?.name || 'PTM BMUP' }}</v-app-bar-title>
       <v-spacer/>
-      <div class="d-none d-sm-flex">
+      <div class="d-none d-md-flex">
         <v-btn variant="text" to="/" class="text-capitalize">Home</v-btn>
         <v-btn variant="text" to="/about" class="text-capitalize">Tentang Kami</v-btn>
         <v-btn variant="text" to="/schedule" class="text-capitalize">Jadwal</v-btn>
@@ -86,8 +92,8 @@
         <v-btn icon="mdi-facebook" variant="text" density="comfortable"/>
         <v-btn icon="mdi-whatsapp" variant="text" density="comfortable"/>
       </div>
-      <div class="px-4 py-3 bg-black w-100 text-center text-caption">
-        &copy; {{ year }} — <strong>PTM BMUP</strong>
+      <div class="px-4 py-3 bg-secondary w-100 text-center text-caption">
+        &copy; {{ year }} — <strong>{{ coreSetting?.name || 'PTM BMUP' }}</strong>
       </div>
     </v-footer>
   </v-app>
@@ -95,6 +101,9 @@
 
 <script setup lang="ts">
 import { useState } from 'nuxt/app'
+import { useCoreSetting } from '~/composables/useCoreSetting'
+
+const { data: coreSetting } = await useCoreSetting()
 const year = useState('footer-year', () => new Date().getFullYear())
 const dev = import.meta.env.DEV
 const drawer = useState('nav-drawer', () => false)

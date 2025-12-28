@@ -15,7 +15,7 @@ describe('DefaultLayout', () => {
     const component = await mountSuspended(DefaultLayout, {
       slots: { default: '<div>content</div>' }
     })
-    const buttons = component.findAll('.d-sm-none')
+    const buttons = component.findAll('.d-md-none')
     expect(buttons.length).toBeGreaterThan(0)
   })
 })

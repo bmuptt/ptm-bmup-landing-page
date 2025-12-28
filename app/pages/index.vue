@@ -1,23 +1,29 @@
 <template>
   <div>
-    <section class="position-relative">
-      <ClientOnly>
-        <v-img
-          :src="data?.hero.image"
-          height="500"
-          cover
-          class="align-center"
-          gradient="to bottom, rgba(0,0,0,.4), rgba(0,0,0,.6)"
-        >
-          <div class="text-center text-white w-100 px-4">
-            <h1 class="text-h2 font-weight-bold mb-4">{{ data?.hero.title }}</h1>
-            <p class="text-h5 mb-6">{{ data?.hero.subtitle }}</p>
-            <v-btn color="accent" size="large" rounded="pill" class="px-8 font-weight-bold">
+    <section class="position-relative bg-white overflow-hidden">
+      <v-container fluid class="py-10 px-4 px-md-8">
+        <v-row align="center" justify="space-between">
+          <v-col cols="12" md="6" style="position: relative; z-index: 2;">
+            <ClientOnly>
+              <h1 class="text-h2 font-weight-bold mb-4 text-primary typing">
+                <span>{{ typedTitle }}</span><span class="caret"/>
+              </h1>
+              <template #fallback>
+                <h1 class="text-h2 font-weight-bold mb-4 text-primary">{{ data?.hero.title }}</h1>
+              </template>
+            </ClientOnly>
+            <p class="text-h5 mb-8 text-medium-emphasis" :style="{ opacity: showSubtitle ? 1 : 0, transition: 'opacity .6s ease .1s' }">{{ data?.hero.subtitle }}</p>
+            <v-btn color="secondary" size="large" rounded="pill" class="px-8 font-weight-bold elevation-4">
               {{ data?.hero.cta }}
+              <v-icon icon="mdi-arrow-right" class="ml-2" />
             </v-btn>
-          </div>
-        </v-img>
-      </ClientOnly>
+          </v-col>
+          <v-col cols="12" md="5" class="mt-4 mt-md-0" style="position: relative; z-index: 1;">
+             <Hero3D />
+          </v-col>
+        </v-row>
+      </v-container>
+      <!-- Background Shape Decoration removed for clean white hero -->
     </section>
 
     <v-container class="py-16">
@@ -45,7 +51,7 @@
       <v-container>
         <h2 class="text-h3 font-weight-bold text-center text-primary mb-12">Kegiatan Kami</h2>
         <v-row>
-          <v-col v-for="activity in data?.activities" :key="activity.id" cols="12" md="4">
+          <v-col v-for="activity in (data?.activities || [])" :key="activity.id" cols="12" md="4">
             <v-card class="h-100 text-center py-8 px-4" elevation="2" hover>
               <v-icon :icon="activity.icon" size="64" color="secondary" class="mb-4"/>
               <v-card-title class="text-h5 font-weight-bold mb-2">{{ activity.title }}</v-card-title>
@@ -71,6 +77,7 @@
               <v-icon icon="mdi-phone" class="mr-4"/>
               <span class="text-h6">{{ data?.contact.phone }}</span>
             </div>
+
             <div class="d-flex align-center">
               <v-icon icon="mdi-map-marker" class="mr-4"/>
               <span class="text-h6">{{ data?.contact.address }}</span>
@@ -88,14 +95,64 @@
 </template>
 
 <script setup lang="ts">
-import { useAsyncData, useSeoMeta } from 'nuxt/app'
+import { useAsyncData, useSeoMeta, createError } from 'nuxt/app'
+import { ref, onMounted, onBeforeUnmount } from 'vue'
 import { useLandingData } from '~/composables/useLandingData'
 
 const { data } = await useAsyncData('landing', () => Promise.resolve(useLandingData()))
+
+if (!data.value && import.meta.server) {
+  throw createError({ statusCode: 500, statusMessage: 'Failed to load landing data' })
+}
 
 useSeoMeta({
   title: 'Home - PTM BMUP',
   description: 'Selamat datang di website resmi PTM BMUP.',
 })
+
+const typedTitle = ref('')
+const showSubtitle = ref(false)
+let timer: number | undefined
+
+onMounted(() => {
+  const full = String(data.value?.hero.title || '')
+  let i = 0
+  const step = () => {
+    if (i <= full.length) {
+      typedTitle.value = full.slice(0, i)
+      i += 1
+      timer = window.setTimeout(step, i < 6 ? 80 : 36)
+    } else {
+      showSubtitle.value = true
+    }
+  }
+  step()
+})
+
+onBeforeUnmount(() => {
+  if (timer) window.clearTimeout(timer)
+})
 </script>
+
+<style scoped>
+.typing {
+  white-space: nowrap;
+}
+.typing .caret {
+  display: inline-block;
+  width: 2px;
+  height: 1em;
+  background-color: currentColor;
+  margin-left: 6px;
+  animation: caretBlink 1s step-end infinite;
+}
+@keyframes caretBlink {
+  50% { opacity: 0; }
+}
+@media (max-width: 960px) {
+  .typing {
+    white-space: normal;
+  }
+}
+</style>
 

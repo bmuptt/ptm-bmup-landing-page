@@ -23,7 +23,7 @@
               </tr>
             </thead>
             <tbody>
-              <tr v-for="(item, index) in data?.schedulePage.schedules" :key="index">
+              <tr v-for="(item, index) in (data?.schedulePage?.schedules || [])" :key="index">
                 <td class="font-weight-medium">{{ item.day }}</td>
                 <td>{{ item.time }}</td>
                 <td>
@@ -57,7 +57,7 @@
           </v-card-title>
           <v-list lines="three">
             <v-list-item
-              v-for="(fee, index) in data?.schedulePage.fees"
+              v-for="(fee, index) in (data?.schedulePage?.fees || [])"
               :key="index"
             >
               <template #prepend>
@@ -89,11 +89,15 @@
 </template>
 
 <script setup lang="ts">
-import { useAsyncData, useSeoMeta } from 'nuxt/app'
+import { useAsyncData, useSeoMeta, createError } from 'nuxt/app'
 import { useLandingData } from '~/composables/useLandingData'
 defineOptions({ name: 'SchedulePage' })
 
 const { data } = await useAsyncData('landing', () => Promise.resolve(useLandingData()))
+
+if (!data.value && import.meta.server) {
+  throw createError({ statusCode: 500, statusMessage: 'Failed to load landing data' })
+}
 
 useSeoMeta({
   title: 'Jadwal & Biaya - PTM BMUP',

@@ -1,18 +1,88 @@
-export const useLandingData = () => {
-  return {
+import { useCoreSetting } from './useCoreSetting'
+import { useLandingSections } from './useLandingSections'
+
+export const useLandingData = async () => {
+  const { data: coreSetting } = await useCoreSetting()
+  const { data: landingSections } = await useLandingSections()
+
+  // Helper to find item by page and key
+  const findItem = (pageKey: string, itemKey: string) => {
+    const section = landingSections.value?.find(s => s.section.page_key === pageKey)
+    return section?.items.find(i => i.key === itemKey)
+  }
+
+  const heroItem = findItem('home', 'hero')
+  const aboutItem = findItem('home', 'tentang_kami')
+  const emailItem = findItem('home', 'contact_email')
+  const phoneItem = findItem('home', 'contact_phone')
+  const visionItem = findItem('about', 'visi')
+  const missionItem = findItem('about', 'misi')
+
+  const data = {
+    core: coreSetting.value, // Expose core setting
     hero: {
-      title: 'Selamat Datang di PTM BMUP',
-      subtitle: 'Komunitas Tenis Meja yang Solid dan Menyenangkan',
-      image:
-        'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=2070&auto=format&fit=crop',
-      cta: 'Gabung Sekarang',
+      title: heroItem?.title || '',
+      subtitle: heroItem?.content || '',
+      cta: heroItem?.button_label || '',
     },
     about: {
-      title: 'Tentang Kami',
-      description:
-        'PTM BMUP adalah Persatuan Tenis Meja yang berlokasi di lingkungan BMUP. Kami mewadahi para pecinta tenis meja dari berbagai kalangan untuk berlatih, bertanding, dan menjalin silaturahmi. Visi kami adalah menciptakan komunitas yang sehat, sportif, dan kekeluargaan.',
-      image:
-        'https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?q=80&w=2070&auto=format&fit=crop',
+      title: aboutItem?.title || 'Tentang Kami',
+      description: aboutItem?.content || '',
+      image: aboutItem?.image_url || '',
+    },
+    contact: {
+      email: emailItem?.content || '',
+      phone: phoneItem?.content || '',
+      address: coreSetting.value?.address || '',
+      maps: coreSetting.value?.maps || '',
+    },
+    aboutPage: {
+      vision: visionItem?.content || '',
+      mission: missionItem?.content || '',
+      history: [
+        {
+          year: '2015',
+          title: 'Pendirian PTM BMUP',
+          description: 'Berawal dari kumpul-kumpul warga BMUP yang hobi tenis meja, akhirnya sepakat membentuk komunitas resmi.',
+        },
+        {
+          year: '2017',
+          title: 'Renovasi GOR',
+          description: 'Perbaikan fasilitas GOR BMUP agar lebih layak dan nyaman untuk latihan rutin.',
+        },
+        {
+          year: '2020',
+          title: 'Juara Turnamen Antar PTM',
+          description: 'Meraih juara 1 kategori beregu pada turnamen persahabatan se-Jakarta Selatan.',
+        },
+        {
+          year: '2023',
+          title: 'Ekspansi Program',
+          description: 'Membuka kelas pembinaan usia dini untuk mencetak bibit atlet baru.',
+        },
+      ],
+      teams: [
+        {
+          name: 'Budi Santoso',
+          role: 'Ketua Umum',
+          image: 'https://randomuser.me/api/portraits/men/1.jpg',
+        },
+        {
+          name: 'Siti Aminah',
+          role: 'Sekretaris',
+          image: 'https://randomuser.me/api/portraits/women/2.jpg',
+        },
+        {
+          name: 'Joko Susilo',
+          role: 'Bendahara',
+          image: 'https://randomuser.me/api/portraits/men/3.jpg',
+        },
+        {
+          name: 'Agus Setiawan',
+          role: 'Pelatih Kepala',
+          image: 'https://randomuser.me/api/portraits/men/4.jpg',
+        },
+      ],
     },
     activities: [
       {
@@ -45,64 +115,6 @@ export const useLandingData = () => {
       'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=600&h=400&fit=crop',
       'https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?q=80&w=600&h=400&fit=crop',
     ],
-    contact: {
-      email: 'info@ptmbmup.com',
-      phone: '+62 812-3456-7890',
-      address: 'GOR BMUP, Jl. Contoh No. 123, Jakarta',
-      maps: 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3966.4363290457636!2d106.845599314769!3d-6.205775995507851!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e69f46f3938d223%3A0x25a52861b58552c6!2sMonumen%20Nasional!5e0!3m2!1sid!2sid!4v1626245837640!5m2!1sid!2sid',
-    },
-    aboutPage: {
-      history: [
-        {
-          year: '2015',
-          title: 'Pendirian PTM BMUP',
-          description: 'Berawal dari kumpul-kumpul warga BMUP yang hobi tenis meja, akhirnya sepakat membentuk komunitas resmi.',
-        },
-        {
-          year: '2017',
-          title: 'Renovasi GOR',
-          description: 'Perbaikan fasilitas GOR BMUP agar lebih layak dan nyaman untuk latihan rutin.',
-        },
-        {
-          year: '2020',
-          title: 'Juara Turnamen Antar PTM',
-          description: 'Meraih juara 1 kategori beregu pada turnamen persahabatan se-Jakarta Selatan.',
-        },
-        {
-          year: '2023',
-          title: 'Ekspansi Program',
-          description: 'Membuka kelas pembinaan usia dini untuk mencetak bibit atlet baru.',
-        },
-      ],
-      vision: 'Menjadi komunitas tenis meja terdepan yang menjunjung tinggi sportivitas dan kekeluargaan.',
-      mission: [
-        'Menyediakan fasilitas latihan yang memadai bagi anggota.',
-        'Mengadakan kegiatan rutin untuk menjaga kebugaran dan silaturahmi.',
-        'Mengembangkan potensi atlet muda berbakat.',
-      ],
-      teams: [
-        {
-          name: 'Budi Santoso',
-          role: 'Ketua Umum',
-          image: 'https://randomuser.me/api/portraits/men/1.jpg',
-        },
-        {
-          name: 'Siti Aminah',
-          role: 'Sekretaris',
-          image: 'https://randomuser.me/api/portraits/women/2.jpg',
-        },
-        {
-          name: 'Joko Susilo',
-          role: 'Bendahara',
-          image: 'https://randomuser.me/api/portraits/men/3.jpg',
-        },
-        {
-          name: 'Agus Setiawan',
-          role: 'Pelatih Kepala',
-          image: 'https://randomuser.me/api/portraits/men/4.jpg',
-        },
-      ],
-    },
     schedulePage: {
       schedules: [
         {
@@ -175,5 +187,6 @@ export const useLandingData = () => {
       },
     ],
   }
+  
+  return data
 }
-
