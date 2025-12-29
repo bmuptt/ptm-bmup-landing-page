@@ -1,9 +1,21 @@
+import type { LandingActivityItem } from '~/model/landing-activities'
 import { fetchCoreSetting } from './useCoreSetting'
 import { fetchLandingSections } from './useLandingSections'
+import { fetchLandingActivities } from './useLandingActivities'
 
 export const useLandingData = async () => {
   const coreSetting = await fetchCoreSetting()
   const landingSections = await fetchLandingSections()
+
+  let activities: LandingActivityItem[] = []
+
+  const activitiesResponse = await fetchLandingActivities()
+  activities = activitiesResponse.map(activity => ({
+    id: activity.id,
+    title: activity.title,
+    description: activity.subtitle,
+    icon: activity.icon?.name || 'mdi-table-tennis',
+  }))
 
   // Helper to find item by page and key
   const findItem = (pageKey: string, itemKey: string) => {
@@ -84,29 +96,7 @@ export const useLandingData = async () => {
         },
       ],
     },
-    activities: [
-      {
-        id: 1,
-        title: 'Latihan Rutin',
-        description:
-          'Setiap Sabtu & Minggu pukul 07:00 - 10:00 WIB. Latihan bebas dan bimbingan teknik dasar.',
-        icon: 'mdi-table-tennis',
-      },
-      {
-        id: 2,
-        title: 'Turnamen Internal',
-        description:
-          'Diadakan setiap bulan untuk mengasah kemampuan dan mental bertanding anggota.',
-        icon: 'mdi-trophy',
-      },
-      {
-        id: 3,
-        title: 'Sparring Partner',
-        description:
-          'Kunjungan ke PTM lain atau menerima kunjungan untuk menambah pengalaman dan relasi.',
-        icon: 'mdi-handshake',
-      },
-    ],
+    activities,
     gallery: [
       'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=600&h=400&fit=crop',
       'https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?q=80&w=600&h=400&fit=crop',

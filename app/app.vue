@@ -8,9 +8,11 @@
 import { useTheme } from 'vuetify'
 import { useCoreSetting } from '~/composables/useCoreSetting'
 import { useLandingSections } from '~/composables/useLandingSections'
+import { useLandingActivities } from '~/composables/useLandingActivities'
 
 const { data: coreSetting } = await useCoreSetting()
 await useLandingSections()
+await useLandingActivities()
 const theme = useTheme()
 
 if (coreSetting.value) {

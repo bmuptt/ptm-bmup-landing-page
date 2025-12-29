@@ -9,6 +9,7 @@ Selalu gunakan alat Vuetify MCP saat membutuhkan pembuatan kode, langkah setup/k
 - Jika ada perubahan pada flow/komponen, buat unit test untuk alur tersebut, jalankan test, dan perbaiki jika ada error.
 - Periksa apakah komponen atau file JS/TS yang diubah sudah memiliki unit test. Jika belum dan memungkinkan, buat unit test untuk memastikan skrip berjalan lancar.
 - Prefer struktur dengan banyak file kecil yang penting, spesifik, mudah di-maintenance dan di-debug.
+- Jika sudah ada composable/model/helper untuk suatu endpoint atau flow, selalu reuse itu (jangan duplikasi logic atau fetch yang sama di tempat lain). Buat file/komponen baru hanya jika benar-benar perlu.
 - Hindari penggunaan tipe data `any` sebisa mungkin.
 - Jangan buat interface di komponen; letakkan di `app\model`.
 - Tampilan harus responsif dan enak dilihat.
