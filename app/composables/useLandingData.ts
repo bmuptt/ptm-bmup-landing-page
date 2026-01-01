@@ -1,7 +1,9 @@
 import type { LandingActivityItem } from '~/model/landing-activities'
+import type { AboutTimeline } from '~/model/about-timeline'
 import { fetchCoreSetting } from './useCoreSetting'
 import { fetchLandingSections } from './useLandingSections'
 import { fetchLandingActivities } from './useLandingActivities'
+import { fetchAboutTimelines } from './useAboutTimelines'
 
 export const useLandingData = async () => {
   const coreSetting = await fetchCoreSetting()
@@ -16,6 +18,8 @@ export const useLandingData = async () => {
     description: activity.subtitle,
     icon: activity.icon?.name || 'mdi-table-tennis',
   }))
+
+  const aboutTimelines: AboutTimeline[] = await fetchAboutTimelines()
 
   // Helper to find item by page and key
   const findItem = (pageKey: string, itemKey: string) => {
@@ -51,28 +55,7 @@ export const useLandingData = async () => {
     aboutPage: {
       vision: visionItem?.content || '',
       mission: missionItem?.content || '',
-      history: [
-        {
-          year: '2015',
-          title: 'Pendirian PTM BMUP',
-          description: 'Berawal dari kumpul-kumpul warga BMUP yang hobi tenis meja, akhirnya sepakat membentuk komunitas resmi.',
-        },
-        {
-          year: '2017',
-          title: 'Renovasi GOR',
-          description: 'Perbaikan fasilitas GOR BMUP agar lebih layak dan nyaman untuk latihan rutin.',
-        },
-        {
-          year: '2020',
-          title: 'Juara Turnamen Antar PTM',
-          description: 'Meraih juara 1 kategori beregu pada turnamen persahabatan se-Jakarta Selatan.',
-        },
-        {
-          year: '2023',
-          title: 'Ekspansi Program',
-          description: 'Membuka kelas pembinaan usia dini untuk mencetak bibit atlet baru.',
-        },
-      ],
+      history: aboutTimelines,
       teams: [
         {
           name: 'Budi Santoso',

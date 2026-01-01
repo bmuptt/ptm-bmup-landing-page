@@ -10,6 +10,8 @@ Selalu gunakan alat Vuetify MCP saat membutuhkan pembuatan kode, langkah setup/k
 - Periksa apakah komponen atau file JS/TS yang diubah sudah memiliki unit test. Jika belum dan memungkinkan, buat unit test untuk memastikan skrip berjalan lancar.
 - Prefer struktur dengan banyak file kecil yang penting, spesifik, mudah di-maintenance dan di-debug.
 - Jika sudah ada composable/model/helper untuk suatu endpoint atau flow, selalu reuse itu (jangan duplikasi logic atau fetch yang sama di tempat lain). Buat file/komponen baru hanya jika benar-benar perlu.
+- Jika perlu call endpoint/service baru, buat composable khusus di `app/composables` (dan type/response di `app/model`) agar SSR-friendly, reusable, dan mudah dites.
+- Untuk data yang dipakai lintas halaman (contoh: landing data), orkestrasi call service dilakukan di `app/composables/useLandingData.ts` agar konsisten dan mudah di-cache/SSR.
 - Hindari penggunaan tipe data `any` sebisa mungkin.
 - Jangan buat interface di komponen; letakkan di `app\model`.
 - Tampilan harus responsif dan enak dilihat.
