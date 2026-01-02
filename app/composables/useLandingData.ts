@@ -5,6 +5,7 @@ import { fetchLandingSections } from './useLandingSections'
 import { fetchLandingActivities } from './useLandingActivities'
 import { fetchAboutTimelines } from './useAboutTimelines'
 import { fetchAboutTeamMembers } from './useAboutTeamMembers'
+import { fetchTrainingSchedules } from './useTrainingSchedules'
 
 export const useLandingData = async () => {
   const coreSetting = await fetchCoreSetting()
@@ -22,11 +23,25 @@ export const useLandingData = async () => {
 
   const aboutTimelines: AboutTimeline[] = await fetchAboutTimelines()
   const aboutTeamMembers = await fetchAboutTeamMembers()
+  const trainingSchedules = await fetchTrainingSchedules()
 
   // Helper to find item by page and key
   const findItem = (pageKey: string, itemKey: string) => {
     const section = landingSections?.find(s => s.section.page_key === pageKey)
     return section?.items.find(i => i.key === itemKey)
+  }
+
+  const dayLabelByIso = (dayOfWeek: number) => {
+    const map: Record<number, string> = {
+      1: 'Senin',
+      2: 'Selasa',
+      3: 'Rabu',
+      4: 'Kamis',
+      5: 'Jumat',
+      6: 'Sabtu',
+      7: 'Minggu',
+    }
+    return map[dayOfWeek] || ''
   }
 
   const heroItem = findItem('home', 'hero')
@@ -74,32 +89,18 @@ export const useLandingData = async () => {
       'https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?q=80&w=600&h=400&fit=crop',
     ],
     schedulePage: {
-      schedules: [
-        {
-          day: 'Selasa',
-          time: '19:00 - 22:00',
-          category: 'Latihan Umum',
-          coach: 'Pak Agus',
-        },
-        {
-          day: 'Kamis',
-          time: '19:00 - 22:00',
-          category: 'Latihan Umum',
-          coach: 'Pak Agus',
-        },
-        {
-          day: 'Sabtu',
-          time: '07:00 - 10:00',
-          category: 'Latihan Pagi & Junior',
-          coach: 'Tim Pelatih',
-        },
-        {
-          day: 'Minggu',
-          time: '07:00 - 12:00',
-          category: 'Game & Turnamen Mini',
-          coach: '-',
-        },
-      ],
+      schedules: trainingSchedules
+        .slice()
+        .sort((a, b) => {
+          if (a.display_order !== b.display_order) return a.display_order - b.display_order
+          return b.id - a.id
+        })
+        .map(item => ({
+          day: dayLabelByIso(item.day_of_week),
+          time: `${item.start_time} - ${item.end_time}`,
+          category: item.category,
+          coach: item.member?.name || '-',
+        })),
       fees: [
         {
           type: 'Iuran Bulanan',

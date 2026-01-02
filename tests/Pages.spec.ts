@@ -58,6 +58,51 @@ describe('New Static Pages', () => {
         }
       }
 
+      if (path.includes('/api/setting/training-schedules/landing')) {
+        return {
+          success: true,
+          message: 'Training schedules retrieved successfully',
+          count: 2,
+          data: [
+            {
+              id: 1,
+              day_of_week: 1,
+              start_time: '09:00',
+              end_time: '10:00',
+              category: 'Latihan Umum',
+              member_id: 12,
+              display_order: 1,
+              is_published: true,
+              member: {
+                id: 12,
+                name: 'Pelatih A',
+                username: 'pelatih_a',
+                photo: null,
+                active: true,
+              },
+              created_by: 0,
+              updated_by: 0,
+              created_at: '2026-01-02T00:00:00.000Z',
+              updated_at: '2026-01-02T00:00:00.000Z',
+            },
+            {
+              id: 2,
+              day_of_week: 3,
+              start_time: '19:00',
+              end_time: '21:00',
+              category: 'Junior',
+              member_id: null,
+              display_order: 2,
+              is_published: true,
+              created_by: 0,
+              updated_by: 0,
+              created_at: '2026-01-02T00:00:00.000Z',
+              updated_at: '2026-01-02T00:00:00.000Z',
+            },
+          ],
+        }
+      }
+
       if (path.includes('/api/setting/core')) {
         return {
           success: true,
@@ -104,10 +149,91 @@ describe('New Static Pages', () => {
   })
 
   it('SchedulePage renders table and fees', async () => {
-    const component = await mountSuspended(SchedulePage)
-    expect(component.text()).toContain('Jadwal Latihan')
-    expect(component.text()).toContain('Biaya Keanggotaan')
-    expect(component.text()).toContain('Catatan Penting')
+    vi.stubGlobal('$fetch', vi.fn(async (url: unknown) => {
+      const path = String(url)
+
+      if (path.includes('/api/setting/training-schedules/landing')) {
+        return {
+          success: true,
+          message: 'Training schedules retrieved successfully',
+          count: 2,
+          data: [
+            {
+              id: 1,
+              day_of_week: 1,
+              start_time: '09:00',
+              end_time: '10:00',
+              category: 'Latihan Umum',
+              member_id: 12,
+              display_order: 1,
+              is_published: true,
+              member: {
+                id: 12,
+                name: 'Pelatih A',
+                username: 'pelatih_a',
+                photo: null,
+                active: true,
+              },
+              created_by: 0,
+              updated_by: 0,
+              created_at: '2026-01-02T00:00:00.000Z',
+              updated_at: '2026-01-02T00:00:00.000Z',
+            },
+            {
+              id: 2,
+              day_of_week: 3,
+              start_time: '19:00',
+              end_time: '21:00',
+              category: 'Junior',
+              member_id: null,
+              display_order: 2,
+              is_published: true,
+              created_by: 0,
+              updated_by: 0,
+              created_at: '2026-01-02T00:00:00.000Z',
+              updated_at: '2026-01-02T00:00:00.000Z',
+            },
+          ],
+        }
+      }
+
+      if (path.includes('/api/setting/about-timelines/landing')) {
+        return { success: true, data: [], message: 'OK', count: 0 }
+      }
+
+      if (path.includes('/api/setting/about-team-members/landing')) {
+        return { success: true, data: [], message: 'OK', count: 0 }
+      }
+
+      if (path.includes('/api/setting/core')) {
+        return { success: true, data: null, message: 'OK' }
+      }
+
+      if (path.includes('/api/setting/landing/sections')) {
+        return { success: true, data: [], message: 'OK' }
+      }
+
+      if (path.includes('/api/setting/landing/activities')) {
+        return { success: true, data: [], message: 'OK', count: 0 }
+      }
+
+      throw new Error(`Unhandled $fetch URL: ${path}`)
+    }))
+
+    try {
+      const component = await mountSuspended(SchedulePage)
+      expect(component.text()).toContain('Jadwal Latihan')
+      expect(component.text()).toContain('Biaya Keanggotaan')
+      expect(component.text()).toContain('Catatan Penting')
+      expect(component.text()).toContain('Senin')
+      expect(component.text()).toContain('09:00 - 10:00')
+      expect(component.text()).toContain('Pelatih A')
+      expect(component.text()).toContain('Rabu')
+      expect(component.text()).toContain('19:00 - 21:00')
+      expect(component.text()).toContain('-')
+    } finally {
+      vi.unstubAllGlobals()
+    }
   })
 
   it('ContactPage renders contact info and form', async () => {
