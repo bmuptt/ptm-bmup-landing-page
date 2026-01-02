@@ -60,9 +60,14 @@
         >
           <v-card class="text-center pa-4" elevation="2">
             <ClientOnly>
-              <v-avatar size="120" class="mb-4">
-                <v-img :src="person.image" cover alt="Foto Profil"/>
-              </v-avatar>
+              <v-avatar
+                size="120"
+                rounded="circle"
+                :color="person.image ? undefined : 'primary'"
+                :image="person.image || undefined"
+                :text="person.image ? undefined : getInitials(person.name)"
+                class="mb-4 mx-auto text-white text-h3 font-weight-bold"
+              />
             </ClientOnly>
             <h3 class="text-h6 font-weight-bold">{{ person.name }}</h3>
             <p class="text-subtitle-1 text-primary">{{ person.role }}</p>
@@ -82,6 +87,26 @@ const { data } = await useAsyncData('landing', useLandingData)
 
 if (!data.value && import.meta.server) {
   throw createError({ statusCode: 500, statusMessage: 'Failed to load landing data' })
+}
+
+const getInitials = (name?: string | null) => {
+  const normalized = String(name || '').trim()
+  if (!normalized) return ''
+
+  const parts = normalized.split(/\s+/).filter(Boolean)
+  const firstPart = parts.at(0)
+  if (!firstPart) return ''
+
+  if (parts.length === 1) {
+    return firstPart.slice(0, 2).toUpperCase()
+  }
+
+  const lastPart = parts.at(-1)
+  if (!lastPart) return firstPart.slice(0, 1).toUpperCase()
+
+  const first = firstPart.slice(0, 1)
+  const last = lastPart.slice(0, 1)
+  return `${first}${last}`.toUpperCase()
 }
 
 useSeoMeta({

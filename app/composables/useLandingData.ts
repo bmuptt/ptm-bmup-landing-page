@@ -4,6 +4,7 @@ import { fetchCoreSetting } from './useCoreSetting'
 import { fetchLandingSections } from './useLandingSections'
 import { fetchLandingActivities } from './useLandingActivities'
 import { fetchAboutTimelines } from './useAboutTimelines'
+import { fetchAboutTeamMembers } from './useAboutTeamMembers'
 
 export const useLandingData = async () => {
   const coreSetting = await fetchCoreSetting()
@@ -20,6 +21,7 @@ export const useLandingData = async () => {
   }))
 
   const aboutTimelines: AboutTimeline[] = await fetchAboutTimelines()
+  const aboutTeamMembers = await fetchAboutTeamMembers()
 
   // Helper to find item by page and key
   const findItem = (pageKey: string, itemKey: string) => {
@@ -56,28 +58,11 @@ export const useLandingData = async () => {
       vision: visionItem?.content || '',
       mission: missionItem?.content || '',
       history: aboutTimelines,
-      teams: [
-        {
-          name: 'Budi Santoso',
-          role: 'Ketua Umum',
-          image: 'https://randomuser.me/api/portraits/men/1.jpg',
-        },
-        {
-          name: 'Siti Aminah',
-          role: 'Sekretaris',
-          image: 'https://randomuser.me/api/portraits/women/2.jpg',
-        },
-        {
-          name: 'Joko Susilo',
-          role: 'Bendahara',
-          image: 'https://randomuser.me/api/portraits/men/3.jpg',
-        },
-        {
-          name: 'Agus Setiawan',
-          role: 'Pelatih Kepala',
-          image: 'https://randomuser.me/api/portraits/men/4.jpg',
-        },
-      ],
+      teams: aboutTeamMembers.map((item) => ({
+        name: item.member?.name || '',
+        role: item.role,
+        image: item.member?.photo || '',
+      })),
     },
     activities,
     gallery: [

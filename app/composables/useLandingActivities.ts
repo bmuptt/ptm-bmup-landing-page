@@ -6,7 +6,7 @@ export const fetchLandingActivities = async () => {
     : (useRuntimeConfig().public.backendUrlSetting as string)
 
   try {
-    const res = await $fetch<ActivitiesResponse>('/api/setting/landing/activities', {
+    const res = await $fetch<ActivitiesResponse>('/api/setting/landing/activities/landing', {
       baseURL,
     })
     return res.data

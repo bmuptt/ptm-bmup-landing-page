@@ -30,6 +30,34 @@ describe('New Static Pages', () => {
         }
       }
 
+      if (path.includes('/api/setting/about-team-members/landing')) {
+        return {
+          success: true,
+          message: 'About team members retrieved successfully',
+          count: 1,
+          data: [
+            {
+              id: 2,
+              member_id: 1002,
+              member: {
+                id: 1002,
+                name: 'Member 1002',
+                username: 'member1002',
+                photo: null,
+                active: true,
+              },
+              role: 'Ketua Umum',
+              display_order: 1,
+              is_published: true,
+              created_by: 0,
+              updated_by: 0,
+              created_at: '2025-12-28T00:00:00.000Z',
+              updated_at: '2025-12-28T00:00:00.000Z',
+            },
+          ],
+        }
+      }
+
       if (path.includes('/api/setting/core')) {
         return {
           success: true,
@@ -68,6 +96,8 @@ describe('New Static Pages', () => {
       expect(component.text()).toContain('Perjalanan Kami')
       expect(component.text()).toContain('Pengurus & Pelatih')
       expect(component.text()).toContain('2010')
+      expect(component.text()).toContain('Member 1002')
+      expect(component.text()).toContain('M1')
     } finally {
       vi.unstubAllGlobals()
     }
