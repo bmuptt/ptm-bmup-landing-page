@@ -7,27 +7,26 @@
 
     <v-row>
       <v-col
-        v-for="(image, index) in (data?.gallery || [])"
-        :key="index"
+        v-for="item in (data?.gallery || [])"
+        :key="item.id"
         cols="12"
         sm="6"
         md="4"
       >
         <v-card elevation="2" class="rounded-lg overflow-hidden">
-          <ClientOnly>
-            <v-img
-              :src="image"
-              aspect-ratio="1.5"
-              cover
-              class="bg-grey-lighten-2"
-            >
-              <template #placeholder>
-                <div class="d-flex align-center justify-center fill-height">
-                  <v-progress-circular indeterminate color="primary" />
-                </div>
-              </template>
-            </v-img>
-          </ClientOnly>
+          <v-img
+            :src="item.src"
+            :alt="item.title"
+            aspect-ratio="1.5"
+            cover
+            class="bg-grey-lighten-2"
+          >
+            <template #placeholder>
+              <div class="d-flex align-center justify-center fill-height">
+                <v-progress-circular indeterminate color="primary" />
+              </div>
+            </template>
+          </v-img>
         </v-card>
       </v-col>
     </v-row>

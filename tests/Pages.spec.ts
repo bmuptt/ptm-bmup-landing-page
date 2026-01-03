@@ -1,7 +1,10 @@
 import { describe, it, expect, vi } from 'vitest'
 import { mountSuspended } from '@nuxt/test-utils/runtime'
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 import AboutPage from '../app/pages/about.vue'
 import SchedulePage from '../app/pages/schedule.vue'
+import { useLandingData } from '../app/composables/useLandingData'
 import ContactPage from '../app/pages/contact.vue'
 import BlogIndexPage from '../app/pages/blog/index.vue'
 
@@ -244,6 +247,84 @@ describe('New Static Pages', () => {
     // Check for form labels
     expect(component.text()).toContain('Nama Lengkap')
     expect(component.text()).toContain('Email / WhatsApp')
+  })
+
+  it('GalleryPage renders images with alt text from title', async () => {
+    vi.stubGlobal('$fetch', vi.fn(async (url: unknown) => {
+      const path = String(url)
+
+      if (path.includes('/api/setting/gallery-items/landing')) {
+        return {
+          success: true,
+          message: 'Gallery items retrieved successfully',
+          count: 2,
+          data: [
+            {
+              id: 2,
+              image_url: 'https://example.com/b.jpg',
+              title: 'B',
+              display_order: 1,
+              is_published: true,
+              created_by: 0,
+              updated_by: 0,
+              created_at: '2026-01-02T00:00:00.000Z',
+              updated_at: '2026-01-02T00:00:00.000Z',
+            },
+            {
+              id: 1,
+              image_url: 'https://example.com/a.jpg',
+              title: 'A',
+              display_order: 1,
+              is_published: true,
+              created_by: 0,
+              updated_by: 0,
+              created_at: '2026-01-02T00:00:00.000Z',
+              updated_at: '2026-01-02T00:00:00.000Z',
+            },
+          ],
+        }
+      }
+
+      if (path.includes('/api/setting/core')) {
+        return { success: true, data: null, message: 'OK' }
+      }
+
+      if (path.includes('/api/setting/landing/sections')) {
+        return { success: true, data: [], message: 'OK' }
+      }
+
+      if (path.includes('/api/setting/landing/activities')) {
+        return { success: true, data: [], message: 'OK', count: 0 }
+      }
+
+      if (path.includes('/api/setting/about-timelines/landing')) {
+        return { success: true, data: [], message: 'OK', count: 0 }
+      }
+
+      if (path.includes('/api/setting/about-team-members/landing')) {
+        return { success: true, data: [], message: 'OK', count: 0 }
+      }
+
+      if (path.includes('/api/setting/training-schedules/landing')) {
+        return { success: true, data: [], message: 'OK', count: 0 }
+      }
+
+      throw new Error(`Unhandled $fetch URL: ${path}`)
+    }))
+
+    try {
+      const landingData = await useLandingData()
+      expect(landingData.gallery).toEqual([
+        { id: 2, src: 'https://example.com/b.jpg', title: 'B' },
+        { id: 1, src: 'https://example.com/a.jpg', title: 'A' },
+      ])
+
+      const gallerySfcPath = resolve(process.cwd(), 'app/pages/gallery.vue')
+      const gallerySfc = readFileSync(gallerySfcPath, 'utf8')
+      expect(gallerySfc).toContain(':alt="item.title"')
+    } finally {
+      vi.unstubAllGlobals()
+    }
   })
 
   it('BlogIndexPage renders article list', async () => {

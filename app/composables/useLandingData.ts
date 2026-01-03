@@ -6,6 +6,7 @@ import { fetchLandingActivities } from './useLandingActivities'
 import { fetchAboutTimelines } from './useAboutTimelines'
 import { fetchAboutTeamMembers } from './useAboutTeamMembers'
 import { fetchTrainingSchedules } from './useTrainingSchedules'
+import { fetchGalleryItems } from './useGalleryItems'
 
 export const useLandingData = async () => {
   const coreSetting = await fetchCoreSetting()
@@ -24,6 +25,7 @@ export const useLandingData = async () => {
   const aboutTimelines: AboutTimeline[] = await fetchAboutTimelines()
   const aboutTeamMembers = await fetchAboutTeamMembers()
   const trainingSchedules = await fetchTrainingSchedules()
+  const galleryItems = await fetchGalleryItems()
 
   // Helper to find item by page and key
   const findItem = (pageKey: string, itemKey: string) => {
@@ -80,14 +82,17 @@ export const useLandingData = async () => {
       })),
     },
     activities,
-    gallery: [
-      'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=600&h=400&fit=crop',
-      'https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?q=80&w=600&h=400&fit=crop',
-      'https://images.unsplash.com/photo-1599586120429-48285b6a8a81?q=80&w=600&h=400&fit=crop',
-      'https://images.unsplash.com/photo-1609710228159-0fa9bd7c0827?q=80&w=600&h=400&fit=crop',
-      'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=600&h=400&fit=crop',
-      'https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?q=80&w=600&h=400&fit=crop',
-    ],
+    gallery: galleryItems
+      .slice()
+      .sort((a, b) => {
+        if (a.display_order !== b.display_order) return a.display_order - b.display_order
+        return b.id - a.id
+      })
+      .map(item => ({
+        id: item.id,
+        src: item.image_url,
+        title: item.title,
+      })),
     schedulePage: {
       schedules: trainingSchedules
         .slice()

@@ -23,7 +23,11 @@ describe('HomePage', () => {
         }
       }
     })
-    expect(component.text()).toContain('Kegiatan Kami')
-    expect(component.text()).toContain('Hubungi Kami')
+    try {
+      expect(component.text()).toContain('Kegiatan Kami')
+      expect(component.text()).toContain('Hubungi Kami')
+    } finally {
+      component.unmount()
+    }
   })
 })
