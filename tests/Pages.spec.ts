@@ -7,6 +7,7 @@ import SchedulePage from '../app/pages/schedule.vue'
 import { useLandingData } from '../app/composables/useLandingData'
 import ContactPage from '../app/pages/contact.vue'
 import BlogIndexPage from '../app/pages/blog/index.vue'
+import { sanitizeHtmlContent } from '../app/utils/render-markdown'
 
 describe('New Static Pages', () => {
   it('AboutPage renders history and team sections', async () => {
@@ -327,10 +328,164 @@ describe('New Static Pages', () => {
     }
   })
 
-  it('BlogIndexPage renders article list', async () => {
-    const component = await mountSuspended(BlogIndexPage)
-    expect(component.text()).toContain('Berita & Artikel')
-    // Check if at least one read more button exists
-    expect(component.text()).toContain('Baca Selengkapnya')
+  it('BlogIndexPage renders highlight and article list', async () => {
+    vi.stubGlobal('$fetch', vi.fn(async (url: unknown) => {
+      const path = String(url)
+
+      if (path.includes('/api/setting/blog-posts/landing/featured')) {
+        return {
+          success: true,
+          message: 'Featured blog posts retrieved successfully',
+          count: 1,
+          data: [
+            {
+              id: 2,
+              slug: 'featured-post',
+              title: 'Featured Post',
+              excerpt: null,
+              content: '<p>Featured</p>',
+              cover_image_url: null,
+              status: 'published',
+              published_at: '2026-01-02T00:00:00.000Z',
+              is_featured: true,
+              meta_title: null,
+              meta_description: null,
+              og_image_url: null,
+              created_by: 0,
+              updated_by: 0,
+              created_at: '2026-01-02T00:00:00.000Z',
+              updated_at: '2026-01-02T00:00:00.000Z',
+            },
+          ],
+        }
+      }
+
+      if (path.includes('/api/setting/blog-posts/landing')) {
+        return {
+          success: true,
+          message: 'Blog posts retrieved successfully',
+          page: 1,
+          limit: 9,
+          total: 1,
+          totalPages: 1,
+          data: [
+            {
+              id: 1,
+              slug: 'my-post',
+              title: 'My Post',
+              excerpt: null,
+              content: '<p>Hello</p>',
+              cover_image_url: null,
+              status: 'published',
+              published_at: '2026-01-02T00:00:00.000Z',
+              is_featured: false,
+              meta_title: null,
+              meta_description: null,
+              og_image_url: null,
+              created_by: 0,
+              updated_by: 0,
+              created_at: '2026-01-02T00:00:00.000Z',
+              updated_at: '2026-01-02T00:00:00.000Z',
+            },
+          ],
+        }
+      }
+
+      throw new Error(`Unhandled $fetch URL: ${path}`)
+    }))
+
+    try {
+      const component = await mountSuspended(BlogIndexPage)
+      expect(component.text()).toContain('Berita & Artikel')
+      expect(component.text()).toContain('Highlight')
+      expect(component.text()).toContain('Featured Post')
+      expect(component.text()).toContain('My Post')
+      expect(component.text()).toContain('Baca Selengkapnya')
+      expect(component.findAll('.excerpt-clamp').length).toBeGreaterThan(0)
+    } finally {
+      vi.unstubAllGlobals()
+    }
+  })
+
+  it('BlogDetailPage renders sanitized HTML content by slug', async () => {
+    const $fetchMock = vi.fn(async (url: unknown) => {
+      const path = String(url)
+
+      if (path.includes('/api/setting/blog-posts/landing/my-post')) {
+        return {
+          success: true,
+          message: 'Blog post retrieved successfully',
+          data: {
+            id: 1,
+            slug: 'my-post',
+            title: 'My Post',
+            excerpt: null,
+            content: '<p>Hello</p><script>alert(1)</script>',
+            cover_image_url: null,
+            status: 'published',
+            published_at: '2026-01-02T00:00:00.000Z',
+            is_featured: false,
+            meta_title: null,
+            meta_description: null,
+            og_image_url: null,
+            created_by: 0,
+            updated_by: 0,
+            created_at: '2026-01-02T00:00:00.000Z',
+            updated_at: '2026-01-02T00:00:00.000Z',
+          },
+        }
+      }
+
+      if (path.includes('/api/setting/core')) {
+        return { success: true, data: null, message: 'OK' }
+      }
+
+      if (path.includes('/api/setting/landing/sections')) {
+        return { success: true, data: [], message: 'OK' }
+      }
+
+      if (path.includes('/api/setting/landing/activities')) {
+        return { success: true, data: [], message: 'OK', count: 0 }
+      }
+
+      throw new Error(`Unhandled $fetch URL: ${path}`)
+    })
+    vi.stubGlobal('$fetch', $fetchMock)
+
+    try {
+      vi.resetModules()
+      vi.doMock('nuxt/app', async () => {
+        const actual = await vi.importActual<typeof import('nuxt/app')>('nuxt/app')
+        return {
+          ...actual,
+          useRoute: () => ({
+            params: { id: 'my-post' },
+            path: '/blog/my-post',
+            fullPath: '/blog/my-post',
+            query: {},
+          }),
+        }
+      })
+
+      const { default: BlogDetailPage } = await import('../app/pages/blog/[id].vue')
+      const component = await mountSuspended(BlogDetailPage)
+      await component.vm.$nextTick()
+      await component.vm.$nextTick()
+
+      expect($fetchMock).toHaveBeenCalled()
+      expect(component.text()).toContain('My Post')
+      expect(component.text()).toContain('Hello')
+      expect(component.html()).not.toContain('<script')
+    } finally {
+      vi.doUnmock('nuxt/app')
+      vi.resetModules()
+      vi.unstubAllGlobals()
+    }
+  })
+
+  it('sanitizeHtmlContent strips scripts', () => {
+    const safe = sanitizeHtmlContent('<p>Hello</p><script>alert(1)</script>')
+    expect(safe).toContain('<p>Hello</p>')
+    expect(safe).not.toContain('<script')
   })
 })

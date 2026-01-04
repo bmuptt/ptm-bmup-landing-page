@@ -1,6 +1,10 @@
 <template>
   <v-container class="py-16">
-    <div v-if="article">
+    <div v-if="pending" class="d-flex justify-center py-12">
+      <v-progress-circular indeterminate color="primary" size="48" />
+    </div>
+
+    <div v-else-if="post">
       <v-btn
         variant="text"
         prepend-icon="mdi-arrow-left"
@@ -11,15 +15,15 @@
       </v-btn>
 
       <article>
-        <h1 class="text-h3 font-weight-bold text-primary mb-4">{{ article.title }}</h1>
+        <h1 class="text-h3 font-weight-bold text-primary mb-4">{{ post.title }}</h1>
         <div class="d-flex align-center text-medium-emphasis mb-8">
           <v-icon icon="mdi-calendar" class="mr-2" size="small"/>
-          <span>{{ article.date }}</span>
+          <span>{{ formatPublishedAt(post.published_at) }}</span>
         </div>
 
-        <ClientOnly>
+        <ClientOnly v-if="post.cover_image_url">
           <v-img
-            :src="article.image"
+            :src="post.cover_image_url"
             height="400"
             cover
             class="rounded-lg mb-8 elevation-2"
@@ -27,7 +31,7 @@
         </ClientOnly>
 
         <div class="text-body-1" style="line-height: 1.8; max-width: 800px; margin: 0 auto;">
-          <div :innerHTML="sanitizedContent"/>
+          <div class="blog-content" v-html="sanitizedContent"/>
         </div>
       </article>
     </div>
@@ -42,38 +46,95 @@
 <script setup lang="ts">
 import { useRoute, useAsyncData, useSeoMeta, createError } from 'nuxt/app'
 import { computed } from 'vue'
-import { useLandingData } from '~/composables/useLandingData'
-import type { BlogArticle } from '~/model/blog'
+import { fetchLandingBlogPostBySlug } from '~/composables/useBlogPosts'
+import { sanitizeHtmlContent, toPlainTextFromHtml } from '~/utils/render-markdown'
 defineOptions({ name: 'BlogDetailPage' })
 
 const route = useRoute()
-const { data } = await useAsyncData('landing', () => Promise.resolve(useLandingData()))
 
-const article = computed(() => {
-  const id = Number(route.params.id)
-  const list = (data.value?.blogData ?? []) as BlogArticle[]
-  return list.find((item) => item.id === id)
+const slug = computed(() => {
+  const raw = Array.isArray(route.params.id) ? route.params.id[0] : route.params.id
+  const fromParams = String(raw || '').trim()
+  if (fromParams) return fromParams
+
+  const rawPath = String(route.path || route.fullPath || '')
+  const [pathWithoutQuery = ''] = rawPath.split('?')
+  const [normalizedPath = ''] = pathWithoutQuery.split('#')
+  const parts = normalizedPath.split('/').filter(Boolean)
+  if (parts[0] !== 'blog') return ''
+  const segment = parts[1]
+  if (!segment) return ''
+  try {
+    return decodeURIComponent(segment)
+  } catch {
+    return segment
+  }
 })
 
-if (!article.value && import.meta.server) {
-  throw createError({
-    statusCode: 404,
-    statusMessage: 'Page Not Found'
-  })
+const { data: post, pending } = await useAsyncData(
+  () => `blog-post-landing-${slug.value}`,
+  () => fetchLandingBlogPostBySlug(slug.value),
+  { watch: [slug] },
+)
+
+if (!post.value && import.meta.server) {
+  throw createError({ statusCode: 404, statusMessage: 'Page Not Found' })
 }
 
-const sanitizedContent = computed(() => {
-  const html = article.value?.content || ''
-  return html
-    .replace(/<script[\s\S]*?>[\s\S]*?<\/script>/gi, '')
-    .replace(/\son\w+="[^"]*"/gi, '')
-    .replace(/\son\w+='[^']*'/gi, '')
-    .replace(/href="javascript:[^"]*"/gi, 'href="#"')
-    .replace(/style="[^"]*"/gi, '')
+const formatPublishedAt = (publishedAt: string | null) => {
+  if (!publishedAt) return ''
+  const date = new Date(publishedAt)
+  if (Number.isNaN(date.getTime())) return ''
+  return new Intl.DateTimeFormat('id-ID', { day: '2-digit', month: 'long', year: 'numeric' }).format(date)
+}
+
+const metaDescription = computed(() => {
+  const explicit = String(post.value?.meta_description || '').trim()
+  if (explicit) return explicit
+
+  const excerpt = String(post.value?.excerpt || '').trim()
+  if (excerpt) return excerpt
+
+  const plain = toPlainTextFromHtml(post.value?.content || '')
+  const max = 160
+  if (!plain) return ''
+  if (plain.length <= max) return plain
+  return `${plain.slice(0, max).trim()}...`
+})
+
+const sanitizedContent = computed(() => sanitizeHtmlContent(post.value?.content || ''))
+
+const seoTitle = computed(() => {
+  return String(post.value?.meta_title || post.value?.title || '').trim() || 'Artikel Tidak Ditemukan'
+})
+
+const seoImage = computed(() => {
+  return String(post.value?.og_image_url || post.value?.cover_image_url || '').trim()
 })
 
 useSeoMeta({
-  title: article.value ? `${article.value.title} - Blog PTM BMUP` : 'Artikel Tidak Ditemukan',
-  description: article.value?.excerpt,
+  title: seoTitle,
+  description: metaDescription,
+  ogTitle: seoTitle,
+  ogDescription: metaDescription,
+  ogImage: seoImage,
 })
 </script>
+
+<style scoped>
+.blog-content :deep(p) {
+  margin: 0 0 1em;
+}
+
+.blog-content :deep(p:last-child) {
+  margin-bottom: 0;
+}
+
+.blog-content :deep(p:empty) {
+  min-height: 1em;
+}
+
+.blog-content :deep(p:empty)::before {
+  content: '\00a0';
+}
+</style>
