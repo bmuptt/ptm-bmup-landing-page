@@ -7,6 +7,7 @@ import SchedulePage from '../app/pages/schedule.vue'
 import { useLandingData } from '../app/composables/useLandingData'
 import ContactPage from '../app/pages/contact.vue'
 import BlogIndexPage from '../app/pages/blog/index.vue'
+import { fetchLandingBlogPosts } from '../app/composables/useBlogPosts'
 import { sanitizeHtmlContent } from '../app/utils/render-markdown'
 
 describe('New Static Pages', () => {
@@ -402,6 +403,36 @@ describe('New Static Pages', () => {
       expect(component.text()).toContain('My Post')
       expect(component.text()).toContain('Baca Selengkapnya')
       expect(component.findAll('.excerpt-clamp').length).toBeGreaterThan(0)
+    } finally {
+      vi.unstubAllGlobals()
+    }
+  })
+
+  it('fetchLandingBlogPosts calls same-origin URL without baseURL', async () => {
+    const $fetchMock = vi.fn(async (_url: unknown, _options?: unknown) => {
+      return {
+        success: true,
+        message: 'OK',
+        page: 1,
+        limit: 9,
+        total: 0,
+        totalPages: 0,
+        data: [],
+      }
+    })
+
+    vi.stubGlobal('$fetch', $fetchMock)
+
+    try {
+      await fetchLandingBlogPosts({ page: 1, limit: 9 })
+      expect($fetchMock).toHaveBeenCalled()
+      const firstCall = $fetchMock.mock.calls[0]
+      expect(firstCall).toBeDefined()
+      const url = firstCall?.[0]
+      const options = firstCall?.[1]
+      expect(String(url)).toBe('/api/setting/blog-posts/landing')
+      expect(options).toBeDefined()
+      expect(options).not.toHaveProperty('baseURL')
     } finally {
       vi.unstubAllGlobals()
     }

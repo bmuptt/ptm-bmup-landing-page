@@ -17,22 +17,14 @@ export interface FetchLandingFeaturedBlogPostsParams {
   limit?: number
 }
 
-const getBaseURL = () => {
-  return import.meta.server
-    ? (process.env.NUXT_PUBLIC_BACKEND_URL_SETTING || 'http://localhost:3200')
-    : (useRuntimeConfig().public.backendUrlSetting as string)
-}
-
 export const fetchLandingBlogPosts = async (
   params: FetchLandingBlogPostsParams = {},
 ): Promise<LandingBlogPostsResult> => {
   const page = Math.max(1, Math.floor(params.page ?? 1))
   const limit = Math.min(50, Math.max(1, Math.floor(params.limit ?? 10)))
-  const baseURL = getBaseURL()
 
   try {
     const res = await $fetch<BlogPostsLandingResponse>('/api/setting/blog-posts/landing', {
-      baseURL,
       params: { page, limit },
     })
 
@@ -52,11 +44,8 @@ export const fetchLandingBlogPostBySlug = async (slug: string): Promise<BlogPost
   const normalizedSlug = String(slug || '').trim()
   if (!normalizedSlug) return null
 
-  const baseURL = getBaseURL()
-
   try {
     const res = await $fetch<BlogPostLandingResponse>(`/api/setting/blog-posts/landing/${encodeURIComponent(normalizedSlug)}`, {
-      baseURL,
     })
     return res.data
   } catch {
@@ -68,11 +57,9 @@ export const fetchLandingFeaturedBlogPosts = async (
   params: FetchLandingFeaturedBlogPostsParams = {},
 ): Promise<BlogPost[]> => {
   const limit = Math.min(50, Math.max(1, Math.floor(params.limit ?? 10)))
-  const baseURL = getBaseURL()
 
   try {
     const res = await $fetch<BlogPostsFeaturedLandingResponse>('/api/setting/blog-posts/landing/featured', {
-      baseURL,
       params: { limit },
     })
     return res.data
